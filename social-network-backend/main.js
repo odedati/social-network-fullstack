@@ -34,17 +34,8 @@ app.use(
 );
 app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(express.static(path.join(__dirname, "public"))); //To serve static files such as images, CSS files, and JavaScript files
-//local:
-// app.use(express.static(path.join(__dirname, "dist")));
-//remote:
-app.use(express.static(path.join(__dirname, '../assignment2-1-315071910_311394365_31655631/dist')));
-app.get("/",function(req,res)
-{ 
-  //remote: 
-  res.sendFile(path.join(__dirname, '../assignment2-1-315071910_311394365_31655631/dist/index.html'));
-  //local:
-  // res.sendFile(__dirname+"/index.html");
-
+app.get("/", function(req, res) {
+  res.send({ message: "Recipes API is running", alive: true });
 });
 
 // app.use(cors());

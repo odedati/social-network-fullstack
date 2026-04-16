@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: social-network-backend
+    env: node
+    rootDir: social-network-backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_CLIENT
+        value: postgres
+      - key: PGSSLMODE
+        value: require
+      - key: DATABASE_URL
+        sync: false
+      - key: bcrypt_saltRounds
+        value: "10"
+      - key: spooncular_apiKey
+        sync: false
+
+  - type: web
+    name: social-network-frontend
+    env: static
+    rootDir: social-network-frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VUE_APP_SERVER_DOMAIN
+        sync: false

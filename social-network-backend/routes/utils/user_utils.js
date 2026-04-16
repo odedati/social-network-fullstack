@@ -25,7 +25,10 @@ async function markAsFavorite(user_id, recipe_id) {
 
 
 async function getFavoriteRecipes(user_id){
-    const recipes_id = await DButils.execQuery(`select recipe_id from favorite_recipes where user_id='${user_id}'`);
+    const recipes_id = await DButils.execQuery(
+      `SELECT recipe_id FROM favorite_recipes WHERE user_id = ?`,
+      [user_id]
+    );
     return recipes_id;
 }
 
@@ -45,7 +48,13 @@ async function removeFavorite(user_id, recipe_id) {
 
 
 async function checkIsFavoriteRecipe(user_id, recipe_id){
-    let favorite_recipes_id = await DButils.execQuery(`select recipe_id from favorite_recipes where user_id='${user_id}' and recipe_id='${recipe_id}'`)
+    if (!user_id || !recipe_id) {
+      return false;
+    }
+    let favorite_recipes_id = await DButils.execQuery(
+      `SELECT recipe_id FROM favorite_recipes WHERE user_id = ? AND recipe_id = ?`,
+      [user_id, String(recipe_id)]
+    );
     if (favorite_recipes_id.length > 0){
         return true;
     }
@@ -53,7 +62,13 @@ async function checkIsFavoriteRecipe(user_id, recipe_id){
 }
 
 async function checkIsRecipeWatched(user_id, recipe_id){
-  let favorite_recipes_id = await DButils.execQuery(`select recipe_id from watchedrecipes where user_id='${user_id}' and recipe_id='${recipe_id}'`)
+  if (!user_id || !recipe_id) {
+    return false;
+  }
+  let favorite_recipes_id = await DButils.execQuery(
+    `SELECT recipe_id FROM watchedrecipes WHERE user_id = ? AND recipe_id = ?`,
+    [user_id, String(recipe_id)]
+  );
   if (favorite_recipes_id.length > 0){
       return true;
   }
@@ -288,9 +303,12 @@ async function removeAllRecipesFromMealPlan(user_id) {
 }
 
 async function checkIsInMeal(user_id, recipe_id) {
+    if (!user_id || !recipe_id) {
+      return false;
+    }
     const rows = await DButils.execQuery(
       'SELECT * FROM user_recipes_meal WHERE user_id = ? AND recipe_id = ?',
-      [user_id, recipe_id]
+      [user_id, String(recipe_id)]
     );
     return rows.length > 0;
   }

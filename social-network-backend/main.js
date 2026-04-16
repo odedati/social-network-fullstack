@@ -11,6 +11,12 @@ var app = express();
 app.set("trust proxy", 1);
 app.use(logger("dev")); //logger
 app.use(express.json()); // parse application/json
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === "production") {
+    req.connection.proxySecure = true;
+  }
+  next();
+});
 app.use(
   session({
     cookieName: "session", // the cookie key name

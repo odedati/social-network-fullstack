@@ -1,5 +1,16 @@
 const DButils = require("./DButils");
 
+function parseJsonField(value) {
+  if (value === null || value === undefined || value === "") {
+    return value;
+  }
+  return typeof value === "string" ? JSON.parse(value) : value;
+}
+
+function field(row, camelName) {
+  const lowerName = camelName.toLowerCase();
+  return row[camelName] !== undefined ? row[camelName] : row[lowerName];
+}
 
 // async function markAsFavorite(user_id, recipe_id){
 //     await DButils.execQuery(`insert into favorite_recipes values ('${user_id}',${recipe_id})`);
@@ -97,15 +108,15 @@ async function getPersonalRecipes(user_id) {
     return await Promise.all(personal_recipes.map(async recipe => ({
       id: recipe.recipe_id,
       title: recipe.title,
-      readyInMinutes: recipe.readyInMinutes,
+      readyInMinutes: field(recipe, "readyInMinutes"),
       image: recipe.image,
       popularity: recipe.popularity,
       vegan: recipe.vegan,
       vegetarian: recipe.vegetarian,
-      glutenFree: recipe.glutenFree,
+      glutenFree: field(recipe, "glutenFree"),
       servings: recipe.servings,
-      ingredients: JSON.parse(recipe.ingredients),
-      instructions: JSON.parse(recipe.instructions),
+      ingredients: parseJsonField(recipe.ingredients),
+      instructions: parseJsonField(recipe.instructions),
       isFavorite: await checkIsFavoriteRecipe(user_id, recipe.recipe_id),
       watched: await checkIsRecipeWatched(user_id, recipe.recipe_id)
     })));
@@ -120,18 +131,18 @@ async function getPersonalRecipes(user_id) {
     return {
       id: recipe_details.recipe_id,
       title: recipe_details.title,
-      readyInMinutes: recipe_details.readyInMinutes,
+      readyInMinutes: field(recipe_details, "readyInMinutes"),
       image: recipe_details.image,
       popularity: recipe_details.popularity,
       vegan: recipe_details.vegan == 1,
       vegetarian: recipe_details.vegetarian == 1,
-      glutenFree: recipe_details.glutenFree == 1,
+      glutenFree: field(recipe_details, "glutenFree") == 1,
       servings: recipe_details.servings,
-      ingredients: JSON.parse(recipe_details.ingredients),
-      instructions: JSON.parse(recipe_details.instructions),
-      parsedInstructions: JSON.parse(recipe_details.parsedInstructions),
-      topIngredients: JSON.parse(recipe_details.topIngredients),
-      topEquipment: JSON.parse(recipe_details.topEquipment),
+      ingredients: parseJsonField(recipe_details.ingredients),
+      instructions: parseJsonField(recipe_details.instructions),
+      parsedInstructions: parseJsonField(field(recipe_details, "parsedInstructions")),
+      topIngredients: parseJsonField(field(recipe_details, "topIngredients")),
+      topEquipment: parseJsonField(field(recipe_details, "topEquipment")),
       summary: recipe_details.summary,
       isFavorite: await checkIsFavoriteRecipe(user_id, recipe_details.recipe_id),
       watched: await checkIsRecipeWatched(user_id, recipe_details.recipe_id),
@@ -302,9 +313,14 @@ async function checkIsInMeal(user_id, recipe_id) {
 
 // Function to mark a recipe as watched
 async function markAsWatched(user_id, recipe_id) {
-  const query = `INSERT INTO watchedrecipes (user_id, recipe_id, watched_at) 
-                 VALUES (?, ?, CURRENT_TIMESTAMP) 
-                 ON DUPLICATE KEY UPDATE watched_at = VALUES(watched_at)`;
+  const query = DButils.isPostgres
+    ? `INSERT INTO watchedrecipes (user_id, recipe_id, watched_at)
+       VALUES (?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT (user_id, recipe_id)
+       DO UPDATE SET watched_at = EXCLUDED.watched_at`
+    : `INSERT INTO watchedrecipes (user_id, recipe_id, watched_at) 
+       VALUES (?, ?, CURRENT_TIMESTAMP) 
+       ON DUPLICATE KEY UPDATE watched_at = VALUES(watched_at)`;
   await DButils.execQuery(query, [user_id, recipe_id]);
 }
 

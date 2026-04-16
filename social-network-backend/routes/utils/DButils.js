@@ -22,13 +22,24 @@
 
 require("dotenv").config();
 const MySql = require("./MySql");
+const Postgres = require("./Postgres");
+
+const usePostgres =
+  process.env.DB_CLIENT === "postgres" || Boolean(process.env.DATABASE_URL);
+
+function convertPlaceholders(query) {
+  let index = 0;
+  return query.replace(/\?/g, () => `$${++index}`);
+}
 
 exports.execQuery = async function (query, params) {
   let returnValue = [];
-  const connection = await MySql.connection();
+  const db = usePostgres ? Postgres : MySql;
+  const connection = await db.connection();
+  const finalQuery = usePostgres && params ? convertPlaceholders(query) : query;
   try {
-    await connection.query("START TRANSACTION");
-    returnValue = await connection.query(query, params);
+    await connection.query(usePostgres ? "BEGIN" : "START TRANSACTION");
+    returnValue = await connection.query(finalQuery, params);
     await connection.query("COMMIT");
   } catch (err) {
     await connection.query("ROLLBACK");
@@ -40,3 +51,4 @@ exports.execQuery = async function (query, params) {
   return returnValue;
 };
 
+exports.isPostgres = usePostgres;

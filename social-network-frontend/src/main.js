@@ -77,7 +77,7 @@ Vue.config.productionTip = false;
 const shared_data = {
   //server_domain: "http://localhost:80",
   //server_domain: "http://127.0.0.1:80",
-  server_domain: "https://amit-barak-oded.cs.bgu.ac.il",
+  server_domain: process.env.VUE_APP_SERVER_DOMAIN || "https://amit-barak-oded.cs.bgu.ac.il",
   username: localStorage.username,
   favorites: JSON.parse(localStorage.getItem("favorites")) || [],
   login(username) {
@@ -116,6 +116,5 @@ new Vue({
   },
   render: (h) => h(App),
 }).$mount("#app");
-
 
 

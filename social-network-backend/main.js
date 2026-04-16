@@ -8,6 +8,7 @@ const DButils = require("./routes/utils/DButils");
 var cors = require('cors')
 
 var app = express();
+app.set("trust proxy", 1);
 app.use(logger("dev")); //logger
 app.use(express.json()); // parse application/json
 app.use(
@@ -19,6 +20,8 @@ app.use(
     activeDuration: 1000 * 60 * 5, // if expiresIn < activeDuration,
     cookie: {
       httpOnly: false,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
     }
     //the session will be extended by activeDuration milliseconds
   })

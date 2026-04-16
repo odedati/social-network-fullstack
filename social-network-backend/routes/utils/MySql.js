@@ -13,11 +13,11 @@ require("dotenv").config();
 
 const config={
   connectionLimit:4,//////////////////////////////////////////////////////////////////////
-    // host: "amit-barak-oded.cs.bgu.ac.il",
-    host: "localhost",
-    user: "root",
-    password: "311394365",
-    database:"mydb"
+    host: process.env.DB_HOST || "localhost",
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "311394365",
+    database: process.env.DB_NAME || "mydb",
+    port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306
 }
 const pool = new mysql.createPool(config);
 
@@ -54,4 +54,3 @@ const query = (sql, binding) => {
   });
 };
 module.exports = { pool, connection, query };
-

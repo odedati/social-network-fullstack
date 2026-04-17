@@ -52,6 +52,11 @@ axios.defaults.withCredentials = true;
 axios.interceptors.request.use(
   function(config) {
     config.withCredentials = true;
+    const token = localStorage.getItem("sessionToken");
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   function(error) {
@@ -82,8 +87,11 @@ const shared_data = {
   server_domain: process.env.VUE_APP_SERVER_DOMAIN || "https://amit-barak-oded.cs.bgu.ac.il",
   username: localStorage.username,
   favorites: JSON.parse(localStorage.getItem("favorites")) || [],
-  login(username) {
+  login(username, token) {
     localStorage.setItem("username", username);
+    if (token) {
+      localStorage.setItem("sessionToken", token);
+    }
     this.username = username;
     console.log("login", this.username);
   },
@@ -91,6 +99,7 @@ const shared_data = {
 
     console.log("logout");
     localStorage.removeItem("username");
+    localStorage.removeItem("sessionToken");
     this.username = undefined;
   }
 };
@@ -118,4 +127,3 @@ new Vue({
   },
   render: (h) => h(App),
 }).$mount("#app");
-

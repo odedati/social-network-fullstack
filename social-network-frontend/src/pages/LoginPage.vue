@@ -89,7 +89,7 @@ export default {
         );
 
         // Update the root store with the logged-in user's username
-        this.$root.store.login(this.form.username);
+        this.$root.store.login(this.form.username, response.data.token);
 
         // Directly call updateMealCount after successful login
         this.$root.$emit('user-logged-in'); // Trigger event if necessary

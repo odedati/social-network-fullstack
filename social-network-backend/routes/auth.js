@@ -4,6 +4,7 @@ const MySql = require("../routes/utils/MySql");
 const DButils = require("../routes/utils/DButils");
 const bcrypt = require("bcrypt");
 const user_utils = require("./utils/user_utils");
+const { createSessionToken } = require("./utils/auth_token");
 
 
 // original!!!
@@ -146,7 +147,11 @@ router.post("/Login", async (req, res, next) => {
 
 
     // return cookie
-    res.status(200).send({ message: "login succeeded", success: true });
+    res.status(200).send({
+      message: "login succeeded",
+      success: true,
+      token: createSessionToken(user.user_id)
+    });
   } catch (error) {
     next(error);
   }

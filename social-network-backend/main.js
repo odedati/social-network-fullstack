@@ -5,6 +5,7 @@ var path = require("path");
 var logger = require("morgan");
 const session = require("client-sessions");
 const DButils = require("./routes/utils/DButils");
+const { userIdFromRequest } = require("./routes/utils/auth_token");
 var cors = require('cors')
 
 var app = express();
@@ -69,11 +70,12 @@ const auth = require("./routes/auth");
 
 //#region cookie middleware
 app.use(function (req, res, next) {
-  if (req.session && req.session.user_id) {
+  const userId = (req.session && req.session.user_id) || userIdFromRequest(req);
+  if (userId) {
     DButils.execQuery("SELECT user_id FROM users")
       .then((users) => {
-        if (users.find((x) => x.user_id === req.session.user_id)) {
-          req.user_id = req.session.user_id;
+        if (users.find((x) => x.user_id === userId)) {
+          req.user_id = userId;
         }
         next();
       })

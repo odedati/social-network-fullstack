@@ -47,9 +47,11 @@ import {
 ].forEach((x) => Vue.use(x));
 Vue.use(Vuelidate);
 
+axios.defaults.withCredentials = true;
+
 axios.interceptors.request.use(
   function(config) {
-    // Do something before request is sent
+    config.withCredentials = true;
     return config;
   },
   function(error) {
@@ -116,5 +118,4 @@ new Vue({
   },
   render: (h) => h(App),
 }).$mount("#app");
-
 

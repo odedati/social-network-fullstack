@@ -28,8 +28,9 @@ router.use(async function (req, res, next) {
     DButils.execQuery("SELECT user_id FROM users").then((users) => {
       if (users.find((x) => x.user_id === req.session.user_id)) {
         req.user_id = req.session.user_id;
-        next();
+        return next();
       }
+      return res.sendStatus(401);
     }).catch(err => next(err));
   } else {
     res.sendStatus(401);
@@ -39,10 +40,10 @@ router.use(async function (req, res, next) {
 
 router.post('/favorites', async (req, res, next) => {
   try {
-    if (!req.session.user_id) {
+    if (!req.user_id) {
       throw { status: 402, message: "User not logged in" };
     }
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
     const recipe_id = req.body.recipeId;
     await user_utils.markAsFavorite(user_id, recipe_id);
     res.status(200).send("The Recipe successfully saved as favorite");
@@ -67,7 +68,7 @@ router.get('/lastSearch', async (req,res,next) => {
 //  */
 // router.get('/favorites', async (req,res,next) => {
 //   try{
-//     const user_id = req.session.user_id;
+//     const user_id = req.user_id;
 //     let favorite_recipes = {};
 //     const recipes_id = await user_utils.getFavoriteRecipes(user_id);
 //     let recipes_id_array = [];
@@ -86,7 +87,7 @@ router.get('/lastSearch', async (req,res,next) => {
  */
 router.get('/favorites', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
 
     if (!user_id) {
       return res.status(401).send({ error: "User not logged in" });
@@ -129,7 +130,7 @@ router.get('/favorites', async (req, res, next) => {
  */
 router.delete('/favorites', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
     const recipe_id = req.body.recipeId;
 
     // Ensure the user is logged in
@@ -152,7 +153,7 @@ router.delete('/favorites', async (req, res, next) => {
  */
 router.post('/my_recipes', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
 
     if (!user_id) {
       return res.status(401).send({ error: "User not logged in" });
@@ -172,7 +173,7 @@ router.post('/my_recipes', async (req, res, next) => {
  */
 router.get('/my_recipes', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
 
     if (!user_id) {
       return res.status(401).send({ error: "User not logged in" });
@@ -188,7 +189,7 @@ router.get('/my_recipes', async (req, res, next) => {
 
 router.get('/my_recipes/:recipeId', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
     const recipe_id = req.params.recipeId;
     const recipe = await user_utils.getMyRecipeByRecipeID(user_id, recipe_id);
     res.status(200).send(recipe);
@@ -203,7 +204,7 @@ router.get('/my_recipes/:recipeId', async (req, res, next) => {
  */
 router.post('/meal_plan', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
 
     if (!user_id) {
       return res.status(401).send({ error: "User not logged in" });
@@ -223,7 +224,7 @@ router.post('/meal_plan', async (req, res, next) => {
  */
 router.get('/meal_plan', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
 
     if (!user_id) {
       return res.status(401).send({ error: "User not logged in" });
@@ -267,7 +268,7 @@ router.get('/meal_plan', async (req, res, next) => {
 // Route to get the step value for a recipe in the user's meal plan
 router.get('/meal_plan/:recipeId/step', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id; // Assume user is authenticated and session contains user_id
+    const user_id = req.user_id; // Assume user is authenticated and session contains user_id
     const recipe_id = req.params.recipeId;
 
     // Fetch the step value using the utility function
@@ -283,7 +284,7 @@ router.get('/meal_plan/:recipeId/step', async (req, res, next) => {
 
 router.post('/meal_plan/:recipeId/:status', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
     const recipe_id = req.params.recipeId;
     const status = parseInt(req.params.status, 10); // Convert status to an integer
 
@@ -304,7 +305,7 @@ router.post('/meal_plan/:recipeId/:status', async (req, res, next) => {
 
 router.post('/meal_plan/:recipeId/step/:step', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
     const recipe_id = req.params.recipeId;
     const step = parseInt(req.params.step, 10); // Convert step to an integer
 
@@ -324,7 +325,7 @@ router.post('/meal_plan/:recipeId/step/:step', async (req, res, next) => {
 
 router.post('/meal_plan/:recipeId/progress/:progress', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
     const recipe_id = req.params.recipeId;
     const progress = parseFloat(req.params.progress); // Convert progress to a float
 
@@ -349,7 +350,7 @@ router.post('/meal_plan/:recipeId/progress/:progress', async (req, res, next) =>
  */
 router.delete('/meal_plan', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
     const recipe_id = req.body.recipeId;
 
     // Ensure the user is logged in
@@ -371,7 +372,7 @@ router.delete('/meal_plan', async (req, res, next) => {
  */
 router.delete('/meal_plan/all', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
 
     // Ensure the user is logged in
     if (!user_id) {
@@ -390,7 +391,7 @@ router.delete('/meal_plan/all', async (req, res, next) => {
 // return the amount of recipes in meal by user.
 router.get('/meal_plan/count', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
 
     // Check if the user is logged in
     if (!user_id) {
@@ -411,7 +412,7 @@ router.get('/meal_plan/count', async (req, res, next) => {
 
 router.post('/resetAllMealPlan', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
 
     // Reset all meal progress and steps for the user
     await user_utils.resetAllMealProgressForUser(user_id);
@@ -430,7 +431,7 @@ router.post('/resetAllMealPlan', async (req, res, next) => {
  */
 // router.get('/lastWatchedRecipes', async (req,res,next) => {
 //   try{
-//     const user_id = req.session.user_id;
+//     const user_id = req.user_id;
 //     const recipes_id = await user_utils.getLastWatchedRecipes(user_id, 3);
 //     let recipes_id_array = []
 //     let last_watched_recipes = [];
@@ -450,7 +451,7 @@ router.post('/resetAllMealPlan', async (req, res, next) => {
 
 // router.get('/lastWatchedRecipes', async (req, res, next) => {
 //   try {
-//     const user_id = req.session.user_id;
+//     const user_id = req.user_id;
 //     const recipes_id = await user_utils.getLastWatchedRecipes(user_id, 3);
 //     let recipes_id_array = [];
 //     let last_watched_recipes = [];
@@ -474,7 +475,7 @@ router.post('/resetAllMealPlan', async (req, res, next) => {
 
 router.get('/lastWatchedRecipes', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
     const recipes_id = await user_utils.getLastWatchedRecipes(user_id, 3);
     let recipes_id_array = [];
     let last_watched_recipes = [];
@@ -505,7 +506,7 @@ router.get('/lastWatchedRecipes', async (req, res, next) => {
 
 router.delete('/deleteWatchedRecipes', async (req, res, next) => {
   try {
-    const user_id = req.session.user_id; // Get the user ID from the session
+    const user_id = req.user_id; // Get the user ID from the session
 
     // Call the function to delete all watched recipes for the specific user
     await user_utils.deleteAllWatchedRecipes(user_id);
@@ -519,7 +520,7 @@ router.delete('/deleteWatchedRecipes', async (req, res, next) => {
 
 router.post("/markwatched/:recipeId", async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id;
     
     if (!user_id) {
       return res.status(401).send({ message: "Unauthorized: No user session" });

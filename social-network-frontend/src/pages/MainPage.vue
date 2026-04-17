@@ -118,7 +118,7 @@ export default {
           { withCredentials: true }
         );
         // Update store with logged-in user
-        this.$root.store.login(this.form.username);
+        this.$root.store.login(this.form.username, response.data.token);
         
         // Emit events to update the meal plan count and refresh data
         this.$root.$emit('user-logged-in');

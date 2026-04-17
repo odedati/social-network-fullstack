@@ -11,9 +11,31 @@ var app = express();
 app.set("trust proxy", 1);
 app.use(logger("dev")); //logger
 app.use(express.json()); // parse application/json
+const corsConfig = {
+  origin: true,
+  credentials: true
+};
+
+app.use(cors(corsConfig));
+app.options("*", cors(corsConfig));
 app.use((req, res, next) => {
   if (process.env.NODE_ENV === "production") {
     req.connection.proxySecure = true;
+    const setHeader = res.setHeader.bind(res);
+    res.setHeader = (name, value) => {
+      if (String(name).toLowerCase() === "set-cookie") {
+        const addSameSiteNone = (cookie) => {
+          if (cookie.includes("SameSite=") || cookie.includes("samesite=")) {
+            return cookie;
+          }
+          return `${cookie}; SameSite=None; Secure`;
+        };
+        value = Array.isArray(value)
+          ? value.map(addSameSiteNone)
+          : addSameSiteNone(String(value));
+      }
+      return setHeader(name, value);
+    };
   }
   next();
 });
@@ -26,7 +48,7 @@ app.use(
     activeDuration: 1000 * 60 * 5, // if expiresIn < activeDuration,
     cookie: {
       httpOnly: false,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: process.env.NODE_ENV === "production" ? false : "lax",
       secure: process.env.NODE_ENV === "production",
     }
     //the session will be extended by activeDuration milliseconds
@@ -37,17 +59,6 @@ app.use(express.static(path.join(__dirname, "public"))); //To serve static files
 app.get("/", function(req, res) {
   res.send({ message: "Recipes API is running", alive: true });
 });
-
-// app.use(cors());
-// app.options("*", cors());
-
-const corsConfig = {
-  origin: true,
-  credentials: true
-};
-
-app.use(cors(corsConfig));
-app.options("*", cors(corsConfig));
 
 var port = process.env.PORT || "80"; //local=3000 remote=80
 //#endregion

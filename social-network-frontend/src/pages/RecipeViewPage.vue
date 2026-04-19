@@ -125,14 +125,15 @@ export default {
       const recipeData = response.status === 304 ? this.recipe : response.data;
       console.log("Fetched recipe data:", recipeData);  // Debugging line
 
-      const { title, readyInMinutes, image, popularity, vegan, vegetarian, glutenFree, ingredients, instructions, servings, isFavorite, inMyMeal } = recipeData;
+      const { title, readyInMinutes, image, popularity, vegan, vegetarian, glutenFree, ingredients, instructions, servings, isFavorite, favorite, inMyMeal } = recipeData;
 
       const formattedInstructions = instructions.length > 0 && instructions[0].steps
         ? instructions[0].steps.map(step => ({ number: step.number, step: step.step }))
         : [];
 
-      this.recipe = { title, readyInMinutes, image, popularity, vegan, vegetarian, glutenFree, ingredients, instructions: formattedInstructions, servings, isFavorite, id, inMyMeal };
-      this.favorite = isFavorite;
+      this.recipe = { title, readyInMinutes, image, popularity, vegan, vegetarian, glutenFree, ingredients, instructions: formattedInstructions, servings, isFavorite, favorite, id, inMyMeal };
+      this.favorite = Boolean(isFavorite || favorite);
+      await this.syncFavoriteState(id);
       this.addedToMeal = this.recipe.inMyMeal;
 
       // Replace mockAddWatchedRecipe with actual markAsWatched method
@@ -145,6 +146,23 @@ export default {
     }
   },
   methods: {
+    async syncFavoriteState(recipeId) {
+      if (!this.$root.store.username) {
+        this.favorite = false;
+        return;
+      }
+
+      try {
+        const response = await axios.get(`${this.$root.store.server_domain}/users/favorites`);
+        const favoriteRecipes = Array.isArray(response.data) ? response.data : [];
+        this.favorite = favoriteRecipes.some((recipe) => {
+          const id = recipe.id !== undefined ? recipe.id : recipe.recipe_id;
+          return String(id) === String(recipeId);
+        });
+      } catch (error) {
+        console.error("Error syncing favorite state:", error);
+      }
+    },
     async toggleFavorite() {
       axios.defaults.withCredentials = true;
       this.favorite = !this.favorite;

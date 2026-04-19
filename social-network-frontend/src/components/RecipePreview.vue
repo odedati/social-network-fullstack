@@ -55,7 +55,7 @@
       <ul class="recipe-overview">
         <li>
           <img
-            src="https://banner2.cleanpng.com/20180604/kwx/kisspng-computer-icons-time-attendance-clocks-font-aweso-clock-icon-5b14c6364f6622.2216713915280881183252.jpg"
+            src="https://toppng.com/uploads/preview/simple-clock-11551049810yu1jp7ny9b.png"
             alt="Time"
             class="icon"
           />

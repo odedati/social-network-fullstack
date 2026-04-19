@@ -95,9 +95,8 @@ beforeDestroy() {
     try {
       let response;
       if (this.source === 'watched') {
-        response = await fetch(this.$root.store.server_domain + '/users/lastWatchedRecipes'); // Fetch last watched recipes from server
-        const data = await response.json();
-        this.recipes = data; // Assign fetched recipes to the data property
+        response = await this.axios.get(this.$root.store.server_domain + '/users/lastWatchedRecipes'); // Fetch last watched recipes from server
+        this.recipes = response.data; // Assign fetched recipes to the data property
         // response = await mockGetWatchedRecipes(); // Fetch watched recipes
         // let recipes = response.data.recipes; // Extract recipes from the response
         // console.log(recipes);

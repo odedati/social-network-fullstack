@@ -12,7 +12,7 @@ router.get("/", (req, res) => res.send("im here hi"));
 router.get("/search", async (req, res, next) => {
   try {
     console.log("search")
-    const user_id = req.session.user_id;
+    const user_id = req.user_id || (req.session && req.session.user_id);
     if (!req.query.query) {
       throw { status: 400, message: "query is missing"};
     }
@@ -28,7 +28,7 @@ router.get("/search", async (req, res, next) => {
 
 router.get("/random", async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id || (req.session && req.session.user_id);
     let random_three_recipe = await recipes_utils.getThreeRandomRecipes(user_id);
     res.send(random_three_recipe);
   } catch (error) {
@@ -39,7 +39,7 @@ router.get("/random", async (req, res, next) => {
 
 router.get("/allFamily", async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id || (req.session && req.session.user_id);
 
     if (!user_id) {
       return res.status(401).send({ error: "User not logged in" });
@@ -68,7 +68,7 @@ router.get("/allFamily", async (req, res, next) => {
  */
 router.get("/:recipeId", async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id || (req.session && req.session.user_id);
     // if (user_id){
     //   await user_utils.markAsWatched(user_id, req.params.recipeId);
     // }
@@ -82,7 +82,7 @@ router.get("/:recipeId", async (req, res, next) => {
 
 router.get("/FAMILY/:recipeId", async (req, res, next) => {
   try {
-    const user_id = req.session.user_id;
+    const user_id = req.user_id || (req.session && req.session.user_id);
     // if (user_id){
     //   await user_utils.markAsWatched(user_id, req.params.recipeId);
     // }
@@ -173,5 +173,4 @@ module.exports = router;
 //     next(error);
 //   }
 // });
-
 
